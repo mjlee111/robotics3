@@ -155,6 +155,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="adc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="filters.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="lcd.h">
       <SubType>compile</SubType>
     </Compile>
@@ -165,6 +171,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="stepmotor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Timer.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

@@ -15,22 +15,19 @@
 #include "servomotor.h"
 #include "lcd.h"
 #include "filters.h"
+#include "Timer.h"
+#include "adc.h"
 
-// Timer cnt
-void cntTimerInit();
-int cnt0 = 0;
-int cnt0_s = 0;
+#define STEP_MOTOR_DIR PB1
+#define STEP_MOTOR_STEP PB0 
+#define STEP_MOTOR_ENABLE PB2
 
-// Step Motor L4988 Motor Driver
-stepmotor stepmotor_;
-//------------------------------------
+#define SERVO_PWM_PIN PD5
 
-// Servo Motor
-servomotor servomotor_;
-//------------------------------------
-
-// LCD
-lcd lcd_;
+StepMotor stepmotor_(STEP_MOTOR_DIR, STEP_MOTOR_STEP, STEP_MOTOR_ENABLE); 
+ServoMotor servomotor_(SERVO_PWM_PIN);
+lcd lcd_; // PCn
+adc adc_; // PAn
 //------------------------------------
 
 // Filters
@@ -47,29 +44,19 @@ double initial_value = 0.0;
 KalmanFilter kf(process_noise, measurement_noise, estimated_error, initial_value);
 //------------------------------------
 
+// Timer Count
+Timer Timer_;
+ISR(TIMER0_OVF_vect) {
+  Timer_.cnt0++;
+  for(int i=0 ; i < 8 ; i++) adc_.ADCRead(i);
+  TCNT0 = 131;
+}
+//------------------------------------
+
 int main(void) {  
   sei();
   return 0;
 }
 
-// Timer cnt
-void cntTimerInit() {
-  // 8ms Timer
-  TCNT0 = 131;
-  TCCR0 = 0x07;
-  TIMSK = 0x01;
-}
-
-ISR(TIMER0_OVF_vect) {
-  cnt0++;
-  if (cnt0 == 125) {
-    cnt0_s++;
-    cnt0 = 0;
-  }
-  if (cnt0_s == 2147483646) {
-    cnt0_s = 0;
-  }
-  TCNT0 = 131;
-}
 //------------------------------------
 
