@@ -12,52 +12,49 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-
 class ServoMotor {
 private:
-    int degree;
+  int degree;
 
 public:
-    ServoMotor(uint8_t pwm);
-    ~ServoMotor();
+  ServoMotor(uint8_t pwm);
+  ~ServoMotor();
 
-    void init(uint8_t pwm);
-    void setAngle(uint8_t angle);
-    int getAngle();
+  void init(uint8_t pwm);
+  void setAngle(uint8_t angle);
+  int getAngle();
 };
 
-ServoMotor::ServoMotor(uint8_t pwm) {
-    init(pwm);
-}
+ServoMotor::ServoMotor(uint8_t pwm) { init(pwm); }
 
 ServoMotor::~ServoMotor() {
-    // 아무 정리 작업이 필요 없을 때
+  // 아무 정리 작업이 필요 없을 때
 }
 
 void ServoMotor::init(uint8_t pwm) {
-    // PWM 핀 설정
-    DDRD |= (1 << pwm);
+  // PWM 핀 설정
+  DDRD |= (1 << pwm);
 
-    // 타이머 설정 : Fast PWM, 비반전 모드, 프리스케일러 8
-    TCCR1A |= (1 << COM1A1) | (1 << WGM11);
-    TCCR1B |= (1 << WGM13) | (1 << WGM12) | (1 << CS11);
-
-    // ICR1 설정 : 20ms 주기 (50Hz)
-    ICR1 = 19999;
-
-    // 초기 서보 위치 0도로 설정 (1ms 펄스 폭)
-    OCR1A = 1000;
-    degree = 0;
+  TCCR1A = (1 << COMA1) | (0 << COMA0) | (1 << WGM11) | (0 << WGM10);
+  TCCR1B =
+      (1 << WGM13) | (1 << WGM12) | (0 << CS12) | (1 << CS11) | (1 << CS10);
+  ICR1 = 4999;
+  OCR1A = 1000;
+  degree = 0;
 }
 
 void ServoMotor::setAngle(uint8_t angle) {
-    // 각도에 따라 PWM 듀티 사이클 설정 (0도: 1ms, 180도: 2ms)
-    OCR1A = 1000 + ((angle * 1000) / 180);
-    degree = angle;
+  double width;
+  double duty;
+
+  width = (angle / 90.0) + 0.5;
+  duty = (width / 20.0) * 100.0;
+
+  OCR1A = int(duty / 100 * ICR1);
+  return OCR1A;
+  degree = angle;
 }
 
-int ServoMotor::getAngle() {
-    return degree;
-}
+int ServoMotor::getAngle() { return degree; }
 
 #endif
